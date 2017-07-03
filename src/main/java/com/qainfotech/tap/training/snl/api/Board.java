@@ -1,9 +1,13 @@
 package com.qainfotech.tap.training.snl.api;
 
 import java.util.UUID;
+import java.util.function.IntPredicate;
+import java.util.Properties;
 import java.util.Random;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,7 +20,8 @@ import org.json.JSONArray;
  * @author Ramandeep 
  */
 public class Board {
-    
+	Properties property ;
+	InputStream in;
     UUID uuid;
     JSONObject data;
     
@@ -28,6 +33,7 @@ public class Board {
     public Board()
             throws FileNotFoundException, UnsupportedEncodingException,
             IOException{
+    	
         uuid = UUID.randomUUID();
         BoardModel.init(uuid);
         data = BoardModel.data(uuid);
@@ -64,6 +70,7 @@ public class Board {
             throws PlayerExistsException, GameInProgressException,
                 FileNotFoundException, UnsupportedEncodingException,
                 MaxPlayersReachedExeption, IOException {
+    	//System.out.println(data.getJSONArray("players").length());
         if(data.getJSONArray("players").length()==4){
             throw new MaxPlayersReachedExeption(4);
         }
@@ -99,8 +106,8 @@ public class Board {
         Boolean response = false;
         for(int i = 0; i < data.getJSONArray("players").length(); i++){
             JSONObject player = data.getJSONArray("players").getJSONObject(i);
-            
-            if(player.getString("uuid").equals(playerUuid.toString())){
+           // System.out.println(player);
+            if(player.get("uuid").toString().equals(playerUuid.toString())){
                 data.getJSONArray("players").remove(i);
                 data.put("turn", 0);
                 BoardModel.save(uuid, data);
@@ -191,4 +198,26 @@ public class Board {
     public UUID getUUID(){
         return uuid;
     }
+    
+
+	public void addOption(String key, String value) throws IOException {
+		property = new Properties();
+		in = this.getClass().getResourceAsStream("/uuidProperty.properties");
+		property.load(in);
+		property.setProperty(key, value);
+		property.store(new FileOutputStream("C:\\Users\\shivambharadwaj\\Desktop\\New folder\\assignment-snl-java-api\\src\\main\\resources\\uuidProperty.properties"), "Shivam Bharadwaj");
+		
+	}
+
+	public Object getOptionValue(String optionKey) throws IOException {
+		return property.getProperty(optionKey);
+	
+    }
+	public Object deleteOptionValue(String optionKey) throws IOException {
+		return property.remove(optionKey);
+	
+    }
+	
+	
+	
 }
